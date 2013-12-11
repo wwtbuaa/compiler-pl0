@@ -1,6 +1,5 @@
 #include"interpreter.h"
 
-int bf=0;
 char call_pro[10];
 char call_procedure[10][10];
 int call_num=0;
@@ -36,8 +35,12 @@ int interpreter()
 			inter_label(in,out);
 		else if(strcmp(in.op,"get")==0)
 			inter_get(in,out);
+		else if(strcmp(in.op,"getvar")==0)
+			inter_gervar(in,out);
 		else if(strcmp(in.op,"push")==0)
 			inter_push(in,out);
+		else if(strcmp(in.op,"pushvar")==0)
+			inter_pushvar(in,out);
 		else if(strcmp(in.op,"write")==0)
 			inter_write(in,out);
 		else if(strcmp(in.op,"add")==0)
@@ -48,6 +51,8 @@ int interpreter()
 			inter_muli(in,out);
 		else if(strcmp(in.op,"mul")==0)
 			inter_mul(in,out);
+		else if(strcmp(in.op,"div")==0)
+			inter_div(in,out);
 		else if(strcmp(in.op,"lw")==0)
 			inter_lw(in,out);
 		else if(strcmp(in.op,"sw")==0)
@@ -99,7 +104,7 @@ int interpreter()
 		printf(".data\n");
 	}
 	for(i=0;i<str_num;i++){
-		fprintf(out,"str%d:.asciiz\"%s\"",i,print_str[i]);
+		fprintf(out,"str%d:.asciiz\"%s\"\n",i,print_str[i]);
 		printf("str%d:.asciiz\"%s\"\n",i,print_str[i]);
 	}
 	return 0;
@@ -165,9 +170,49 @@ int inter_push(asyntax_code in,FILE *out)
 int inter_pushvar(asyntax_code in,FILE *out)
 {
 	char s1[10],s2[10];
+	int offset,i;
+	ssymbol_table t;
+	asymbol_entity e;
 	split(in.dest,s1,s2);
-	printf("addi $t0 $gp -%d\n",4*(atoi(s2)+1));
-	fprintf(out,"addi $t0 $gp -%d\n",4*(atoi(s2)+1));
+	if(strcmp(s1,call_pro)==0){
+		e=search_from_table(s2,find(call_pro));
+		offset=search_offset(s1,s2);
+		if(e.orvar==3){
+			printf("lw $t0 %d($s3)\n",offset);
+			fprintf(out,"lw $t0 %d($s3)\n",offset);
+		}
+		else{
+			fprintf(out,"addi $t0 $s3 %d\n",offset);
+			printf("addi $t0 $s3 %d\n",offset);
+		}
+	}
+	else{
+		t=find(call_pro);
+		for(i=t->level-2;i>=0;i--){
+			if(strcmp(t->stack[i]->name,s1)==0){
+				e=search_from_table(s2,t->stack[i]);
+				break;
+			}
+		}
+		printf("lw $s1 -%d($s4)\n",4*(i+1));
+		fprintf(out,"lw $s1 -%d($s4)\n",4*(i+1));
+		offset=search_offset(s1,s2);
+		if(e.orvar==3){
+			printf("lw $t0 %d($s1)\n",offset);
+			fprintf(out,"lw $t0 %d($s1)\n",offset);
+		}
+		else{
+			printf("addi $t0 $s1 %d\n",offset);
+			fprintf(out,"addi $t0 $s1 %d\n",offset);
+		}
+	}
+	if(strcmp(in.src1,"\0")!=0){
+		split(in.src1,s1,s2);
+		printf("lw $t1 -%d($gp)\n",4*(atoi(s2)+1));
+		printf("add $t0 $t0 $t1\n");
+		fprintf(out,"lw $t1 -%d($gp)\n",4*(atoi(s2)+1));
+		fprintf(out,"add $t0 $t0 $t1\n");
+	}
 	printf("addi $s0 $s0 -4\n");
 	printf("sw $t0 0($s0)\n");
 	fprintf(out,"addi $s0 $s0 -4\n");
@@ -220,7 +265,7 @@ int inter_read(asyntax_code in,FILE *out)
 		printf("addi $s1 $sp 0\n");
 	}else{
 		t=find(call_pro);
-		for(i=t->lev;i>=0;i--){
+		for(i=t->lev-1;i>=0;i--){
 			if(strcmp(t->stack[i]->name,s1)==0){
 				e=search_from_table(s2,t->stack[i]);
 				if(e.orvar==0)
@@ -257,9 +302,13 @@ int inter_addi(asyntax_code in,FILE *out)
 		else{
 			if(strcmp(s1,call_pro)==0){
 				e=search_from_table(s2,find(call_pro));
-				if(e.orvar==3)
-					while(1)
-						;
+				if(e.orvar==3){
+					offset=search_offset(s1,s2);
+					fprintf(out,"lw $t1 %d($sp)\n",offset);
+					printf("lw $t1 %d($sp)\n",offset);
+					fprintf(out,"lw $t1 0($t1)\n");
+					printf("lw $t1 0($t1)\n");
+				}
 				else if(e.lenth>0){
 					offset=search_offset(s1,s2);
 					fprintf(out,"addi $t1 $sp %d\n",offset);
@@ -273,19 +322,22 @@ int inter_addi(asyntax_code in,FILE *out)
 			}
 			else{
 				t=find(call_pro);
-				for(i=t->lev;i>=0;i--){
+				for(i=t->level-2;i>=0;i--){
 					if(strcmp(t->stack[i]->name,s1)==0){
 						e=search_from_table(s2,t->stack[i]);
-						if(e.orvar==3)
-							while(1)
-								;
-						fprintf(out,"lw $s1 -%d($fp)\n",4*(i+1));
-						printf("lw $s1 -%d($fp)\n",4*(i+1));
 						break;
 					}
 				}
+				fprintf(out,"lw $s1 -%d($fp)\n",4*(i+1));
+				printf("lw $s1 -%d($fp)\n",4*(i+1));
 				offset=search_offset(s1,s2);
-				if(e.lenth>0){
+				if(e.orvar==3){
+					fprintf(out,"lw $t1 %d($s1)\n",offset);
+					printf("lw $t1 %d($s1)\n",offset);
+					fprintf(out,"lw $t1 0($t1)\n",offset);
+					printf("lw $t1 0($t1)\n",offset);
+				}		
+				else if(e.lenth>0){
 					fprintf(out,"addi $t1 $s1 %d\n",offset);
 					printf("lw $t1 $s1 %d\n",offset);
 				}
@@ -306,98 +358,110 @@ int inter_addi(asyntax_code in,FILE *out)
 	else{
 		if(strcmp(s3,call_pro)==0){
 			e=search_from_table(s4,find(call_pro));
-			if(e.orvar==3)
-				while(1)
-					;
-			fprintf(out,"addi $s1 $sp 0\n");
-			printf("addi $s1 $sp 0\n");
+			offset=search_offset(s3,s4);
+			if(e.orvar==3){
+				fprintf(out,"lw $t3 %d($sp)\n",offset);
+				printf("lw $t3 %d($sp)\n",offset);
+				fprintf(out,"sw $t0 0($t3)\n",offset);
+				printf("sw $t0 0($t3)\n",offset);
+			}
+			else{
+				fprintf(out,"sw $t0 %d($sp)\n",offset);
+				printf("sw $t0 %d($sp)\n",offset);
+			}
 		}
 		else{
 			t=find(call_pro);
-			for(i=t->lev;i>=0;i--){
+			for(i=t->level-2;i>=0;i--){
 				if(strcmp(t->stack[i]->name,s1)==0){
-					e=search_from_table(s4,find(call_pro));
-					if(e.orvar==3)
-						while(1)
-							;
-					fprintf(out,"lw $s1 -%d($fp)\n",4*(i+1));
-					printf("lw $s1 -%d($fp)\n",4*(i+1));
+					e=search_from_table(s4,t->stack[i]);
+					break;
 				}
 			}
+			fprintf(out,"lw $s1 -%d($fp)\n",4*(i+1));
+			printf("lw $s1 -%d($fp)\n",4*(i+1));
+			offset=search_offset(s3,s4);
+			if(e.orvar==3){
+				printf("lw $t3 %d($s1)\n",offset);
+				fprintf(out,"lw $t3 %d($s1)\n",offset);
+				printf("sw $t0 0($t3)\n");
+				fprintf(out,"sw $t0 0($t3)\n");
+			}
+			else{
+				fprintf(out,"sw $t0 %d($s1)\n",offset);
+				printf("sw $t0 %d($s1)\n",offset);
+			}
 		}
-		offset=search_offset(s3,s4);
-		fprintf(out,"sw $t0 %d($s1)\n",offset);
-		printf("sw $t0 %d($s1)\n",offset);
 	}
 }
 
 int inter_add(asyntax_code in,FILE *out)
 {
 	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
-	int offset;
+	int offset,i;
 	ssymbol_table t;
 	asymbol_entity e;
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
-	split(in.src2,s5,s6);
+	split(in.src2,s5,s6);	
 	if(strcmp(s3,"gp")==0){
-		fprintf(out,"lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
 		printf("lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
+		fprintf(out,"lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
 	}
 	else{
 		if(strcmp(s3,call_pro)==0){
 			e=search_from_table(s4,find(call_pro));
-			if(e.orvar==3)
-				while(1)
-					;
-			else if(e.lenth>0){
-				fprintf(out,"addi $s1 $sp 0\n");
-				printf("addi $s1 $sp 0\n");
+			if(e.orvar==3){
 				offset=search_offset(s3,s4);
-				fprintf(out,"addi $t1 $s1 %d\n",offset);
-				printf("addi $t1 $s1 %d\n",offset);
+				printf("lw $t1 %d($sp)\n",offset);
+				printf("lw $t1 0($t1)\n");
+				fprintf(out,"lw $t1 %d($sp)\n",offset);
+				fprintf(out,"lw $t1 0($t1)\n");
+			}
+			else if(e.lenth>0){
+				offset=search_offset(s3,s4);
+				fprintf(out,"addi $t1 $sp %d\n",offset);
+				printf("addi $t1 $sp %d\n",offset);
 			}
 			else{
-				fprintf(out,"addi $s1 $sp 0\n");
-				printf("addi $s1 $sp 0\n");
 				offset=search_offset(s3,s4);
+				fprintf(out,"lw $t1 %d($sp)\n",offset);
+				printf("lw $t1 %d($sp)\n",offset);
+			}
+		}
+		else{
+			t=find(call_pro);
+			for(i=t->level-2;i>=0;i--){
+				if(strcmp(t->stack[i]->name,s3)==0){
+					e=search_from_table(s4,t->stack[i]);
+					break;
+				}
+			}
+			printf("lw $s1 -%d($fp)\n",4*(i+1));
+			fprintf(out,"lw $s1 -%d($fp)\n",4*(i+1));
+			offset=search_offset(s3,s4);
+			if(e.orvar==3){
+				fprintf(out,"lw $t1 %d($s1)\n",offset);
+				printf("lw $t1 %d($s1)\n",offset);
+				fprintf(out,"lw $t1 0($t1)\n",offset);
+				printf("lw $t1 0($t1)\n",offset);
+			}		
+			else if(e.lenth>0){
+				fprintf(out,"addi $t1 $s1 %d\n",offset);
+				printf("lw $t1 $s1 %d\n",offset);
+			}
+			else{
 				fprintf(out,"lw $t1 %d($s1)\n",offset);
 				printf("lw $t1 %d($s1)\n",offset);
 			}
 		}
 	}
-	if(strcmp(s5,"gp")==0){
-		fprintf(out,"lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
-		printf("lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
-	}
-	else{
-		if(strcmp(s5,call_pro)==0){
-			e=search_from_table(s6,find(call_pro));
-			if(e.orvar==3)
-				while(1)
-					;
-			else if(e.lenth>0){
-				fprintf(out,"addi $s1 $sp 0\n");
-				printf("addi $s1 $sp 0\n");
-				offset=search_offset(s5,s6);
-				fprintf(out,"addi $t2 $s1 %d\n",offset);
-				printf("lw $t2 $s1 %d\n",offset);
-			}
-			else{
-				fprintf(out,"addi $s1 $sp 0\n");
-				printf("addi $s1 $sp 0\n");
-				offset=search_offset(s5,s6);
-				fprintf(out,"lw $t2 %d($s1)\n",offset);
-				printf("lw $t2 %d($s1)\n",offset);
-			}
-		}
-	}
+	fprintf(out,"lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
+	printf("lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
 	printf("add $t0 $t1 $t2\n");
 	fprintf(out,"add $t0 $t1 $t2\n");
-	if(strcmp(s1,"gp")==0){
-		fprintf(out,"sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
-		printf("sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
-	}
+	fprintf(out,"sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
+	printf("sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	return 0;
 }
 
@@ -462,6 +526,23 @@ int inter_mul(asyntax_code in,FILE *out)
 	return 0;
 }
 
+int inter_div(asyntax_code in,FILE *out)
+{
+	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
+	split(in.dest,s1,s2);
+	split(in.src1,s3,s4);
+	split(in.src2,s5,s6);
+	printf("lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
+	printf("lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
+	printf("div $t0 $t1 $t2\n");
+	printf("sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
+	fprintf(out,"lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
+	fprintf(out,"lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
+	fprintf(out,"div $t0 $t1 $t2\n");
+	fprintf(out,"sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
+	return 0;
+}
+
 int split(char s[],char s1[],char s2[])
 {
 	int i=0,j;
@@ -502,6 +583,9 @@ int add_offset()
 int inter_sub(asyntax_code in,FILE *out)
 {
 	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
+	int i,offset;
+	ssymbol_table t;
+	asymbol_entity e;
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
 	split(in.src2,s5,s6);
@@ -510,17 +594,46 @@ int inter_sub(asyntax_code in,FILE *out)
 		fprintf(out,"lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
 	}
 	else{
-
-
+		if(strcmp(s3,call_pro)==0){
+			e=search_from_table(s4,find(call_pro));
+			if(e.orvar==3){
+				offset=search_offset(s3,s4);
+				printf("lw $t1 %d($sp)\n",offset);
+				printf("lw $t1 0($t1)\n");
+				fprintf(out,"lw $t1 %d($sp)\n",offset);
+				fprintf(out,"lw $t1 0($t1)\n");
+			}
+			else{
+				offset=search_offset(s3,s4);
+				fprintf(out,"lw $t1 %d($sp)\n",offset);
+				printf("lw $t1 %d($sp)\n",offset);
+			}
+		}
+		else{
+			t=find(call_pro);
+			for(i=t->level-2;i>=0;i--){
+				if(strcmp(t->stack[i]->name,s3)==0){
+					e=search_from_table(s4,t->stack[i]);
+					break;
+				}
+			}
+			printf("lw $s1 -%d($fp)\n",4*(i+1));
+			fprintf(out,"lw $s1 -%d($fp)\n",4*(i+1));
+			offset=search_offset(s3,s4);
+			if(e.orvar==3){
+				fprintf(out,"lw $t1 %d($s1)\n",offset);
+				printf("lw $t1 %d($s1)\n",offset);
+				fprintf(out,"lw $t1 0($t1)\n",offset);
+				printf("lw $t1 0($t1)\n",offset);
+			}		
+			else{
+				fprintf(out,"lw $t1 %d($s1)\n",offset);
+				printf("lw $t1 %d($s1)\n",offset);
+			}
+		}
 	}
-	if(strcmp(s5,"gp")==0){
-		printf("lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
-		fprintf(out,"lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
-	}
-	else{
-
-
-	}
+	printf("lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
+	fprintf(out,"lw $t2 -%d($gp)\n",4*(atoi(s6)+1));
 	printf("sub $t0 $t1 $t2\n");
 	fprintf(out,"sub $t0 $t1 $t2\n");
 	printf("sw $t0 -%d($gp)\n",4*(atoi(s2)+1));
@@ -584,6 +697,10 @@ int inter_call(asyntax_code in,FILE *out)
 	int offset,i,j;
 	l1=t->level;
 	l2=t1->level;
+	printf("addi $s3 $sp 0\n");
+	fprintf(out,"addi $s3 $sp 0\n");
+	printf("addi $s4 $fp 0\n");
+	fprintf(out,"addi $s4 $fp 0\n");
 	for(i=0;i<return_num();i++){
 		printf("lw $t0 -%d($gp)\n",4*(i+1));
 		printf("sw $t0 -%d($sp)\n",4*(i+1));
@@ -592,8 +709,8 @@ int inter_call(asyntax_code in,FILE *out)
 	}
 	if(l1==l2+1){
 		for(i=0;i<l2-1;i++){
-			printf("lw $t0 -%d($fp)\n",4*(i+1)+4*return_num());
-			fprintf(out,"lw $t0 -%d($fp)\n",4*(i+1)+4*return_num());
+			printf("lw $t0 -%d($fp)\n",4*(i+1));
+			fprintf(out,"lw $t0 -%d($fp)\n",4*(i+1));
 			printf("sw $t0 -%d($sp)\n",4*(i+1)+4*return_num());
 			fprintf(out,"sw $t0 -%d($sp)\n",4*(i+1)+4*return_num());
 		}
@@ -603,8 +720,8 @@ int inter_call(asyntax_code in,FILE *out)
 	}
 	else{
 		for(i=0;i<l1-1;i++){
-			printf("lw $t0 -%d($fp)\n",4*(i+1)+4*return_num());
-			fprintf(out,"lw $t0 -%d($fp)\n",4*(i+1)+4*return_num());
+			printf("lw $t0 -%d($fp)\n",4*(i+1));
+			fprintf(out,"lw $t0 -%d($fp)\n",4*(i+1));
 			printf("sw $t0 -%d($sp)\n",4*(i+1)+4*return_num());
 			fprintf(out,"sw $t0 -%d($sp)\n",4*(i+1)+4*return_num());
 		}

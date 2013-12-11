@@ -32,10 +32,12 @@ int inter_ret(asyntax_code in,FILE *out);
 int inter_exit(asyntax_code in,FILE *out);
 int inter_popst(asyntax_code in,FILE *out);
 int inter_pushst(asyntax_code in,FILE *out);
-
+int inter_div(asyntax_code in,FILE *out);
 
 //$s0 is used for passing parameters; 
 //$s1 is used for finding the address;
 //$s2 is used for return address;
-//$t0,$t1,$t2 is used for computing;
+//$s3 is used for last $sp;
+//$s4 is used for last $fp;
+//$t0,$t1,$t2,$t3 is used for computing;
 #endif

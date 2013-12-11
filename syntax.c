@@ -393,19 +393,19 @@ int syntax_condition(scondition pcondition,char *o)
 		code_number++;
 		break;
 	case 5:
-		sprintf(code[code_number].op,"beq");
-		sprintf(code[code_number].dest,"gp:%d",temp1);
-		sprintf(code[code_number].src1,"gp:%d",temp);
-		sprintf(code[code_number].src2,"label%d",label);
-		printf("beq gp:%d gp:%d label%d\n",temp1,temp,label);
-		code_number++;
-		break;
-	case 6:
 		sprintf(code[code_number].op,"bne");
 		sprintf(code[code_number].dest,"gp:%d",temp1);
 		sprintf(code[code_number].src1,"gp:%d",temp);
 		sprintf(code[code_number].src2,"label%d",label);
 		printf("bne gp:%d gp:%d label%d\n",temp1,temp,label);
+		code_number++;
+		break;
+	case 6:
+		sprintf(code[code_number].op,"beq");
+		sprintf(code[code_number].dest,"gp:%d",temp1);
+		sprintf(code[code_number].src1,"gp:%d",temp);
+		sprintf(code[code_number].src2,"label%d",label);
+		printf("beq gp:%d gp:%d label%d\n",temp1,temp,label);
 		code_number++;
 		break;
 	}
@@ -487,7 +487,7 @@ int syntax_whilestatement(swhilestatement pwhilestatement,char *o)
 int syntax_forstatement(sforstatement pforstatement,char *o)
 {
 	int temp1,temp2;
-	int label1;
+	int label1,label2;
 	syntax_expression(pforstatement->pexpression2,o);
 	temp2=temp;
 	temp++;
@@ -507,6 +507,7 @@ int syntax_forstatement(sforstatement pforstatement,char *o)
 	code_number++;
 	printf("label%d:\n",label);
 	label1=label++;
+	label2=label++;
 	switch(pforstatement->type){
 	case 0:
 		sprintf(code[code_number].op,"sub");
@@ -515,12 +516,12 @@ int syntax_forstatement(sforstatement pforstatement,char *o)
 		sprintf(code[code_number].src2,"gp:%d",temp2);
 		code_number++;
 		printf("sub gp:%d %s:%s gp:%d\n",temp,search_table(o,pforstatement->piden)->name,pforstatement->piden,temp2);
-		sprintf(code[code_number].op,"bgez");
+		sprintf(code[code_number].op,"bgtz");
 		sprintf(code[code_number].dest,"gp:%d",temp);
 		sprintf(code[code_number].src1,"1");
-		sprintf(code[code_number].src2,"label%d",label);
+		sprintf(code[code_number].src2,"label%d",label2);
 		code_number++;
-		printf("bgtz gp:%d 0 label%d\n",temp,label);
+		printf("bgtz gp:%d 0 label%d\n",temp,label2);
 		temp++;
 		syntax_statement(pforstatement->pstatement,o);
 		sprintf(code[code_number].op,"addi");
@@ -536,11 +537,11 @@ int syntax_forstatement(sforstatement pforstatement,char *o)
 		code_number++;
 		printf("j label%d\n",label1);
 		sprintf(code[code_number].op,"label");
-		sprintf(code[code_number].dest,"%d",label);
+		sprintf(code[code_number].dest,"%d",label2);
 		strcpy(code[code_number].src1,"\0");
 		strcpy(code[code_number].src2,"\0");
 		code_number++;
-		printf("label%d:",label);
+		printf("label%d:",label2);
 		label++;
 		break;
 	case 1:
@@ -550,12 +551,12 @@ int syntax_forstatement(sforstatement pforstatement,char *o)
 		sprintf(code[code_number].src2,"%s:%s",search_table(o,pforstatement->piden)->name,pforstatement->piden);
 		code_number++;
 		printf("sub gp:%d gp:%d %s:%s\n",temp,temp2,search_table(o,pforstatement->piden)->name,pforstatement->piden);
-		sprintf(code[code_number].op,"bgez");
+		sprintf(code[code_number].op,"bgtz");
 		sprintf(code[code_number].dest,"gp:%d",temp);
 		sprintf(code[code_number].src1,"1");
-		sprintf(code[code_number].src2,"label%d",label);
+		sprintf(code[code_number].src2,"label%d",label2);
 		code_number++;
-		printf("bgtz gp:%d 0 label:%d\n",temp,label);
+		printf("bgtz gp:%d 0 label:%d\n",temp,label2);
 		syntax_statement(pforstatement->pstatement,o);
 		sprintf(code[code_number].op,"subi");
 		sprintf(code[code_number].dest,"%s:%s",search_table(o,pforstatement->piden)->name,pforstatement->piden);
@@ -570,11 +571,11 @@ int syntax_forstatement(sforstatement pforstatement,char *o)
 		code_number++;
 		printf("j label%d\n",label1);
 		sprintf(code[code_number].op,"label");
-		sprintf(code[code_number].dest,"%d",label);
+		sprintf(code[code_number].dest,"%d",label2);
 		strcpy(code[code_number].src1,"\0");
 		strcpy(code[code_number].src2,"\0");
 		code_number++;
-		printf("label%d:\n",label);
+		printf("label%d:\n",label2);
 		label++;
 		break;
 	}
@@ -730,10 +731,10 @@ int syntax_callprocedure(scallprocedure pcallprocedure,char *o)
 	for(i=0;i<call_number;i++){
 		sprintf(code[code_number].op,call_code[i].op);
 		sprintf(code[code_number].dest,"%s",call_code[i].dest);
-		sprintf(code[code_number].src1,"\0");
+		sprintf(code[code_number].src1,"%s",call_code[i].src1);
 		sprintf(code[code_number].src2,"\0");
 		code_number++;
-		printf("%s %s\n",call_code[i].op,call_code[i].dest);
+		printf("%s %s %s\n",call_code[i].op,call_code[i].dest,call_code[i].src1);
 	}
 	sprintf(code[code_number].op,"jal");
 	sprintf(code[code_number].dest,"%d",find(pcallprocedure->piden)->value);
@@ -765,10 +766,10 @@ int syntax_callfunction(scallfunction pcallfunction,char *o)
 	for(i=0;i<call_number;i++){
 		sprintf(code[code_number].op,call_code[i].op);
 		sprintf(code[code_number].dest,"%s",call_code[i].dest);
-		sprintf(code[code_number].src1,"\0");
+		sprintf(code[code_number].src1,"%s",call_code[i].src1);
 		sprintf(code[code_number].src2,"\0");
 		code_number++;
-		printf("%s %s\n",call_code[i].op,call_code[i].dest);
+		printf("%s %s %s\n",call_code[i].op,call_code[i].dest,call_code[i].src1);
 	}
 	sprintf(code[code_number].op,"jal");
 	sprintf(code[code_number].dest,"%d",find(pcallfunction->piden)->value);
@@ -793,20 +794,42 @@ int syntax_callfunction(scallfunction pcallfunction,char *o)
 
 int syntax_realtable(srealtable prealtable,char *s,char *o,int *n)
 {
-	int temp1;
-	syntax_expression(prealtable->pexpression,o);
-	temp1=temp++;
+	int temp1,k;
 	(*n)++;
+	k=*n;
 	if(prealtable->prealtable!=NULL)
 		syntax_realtable(prealtable->prealtable,s,o,n);
-	if(find(s)->s[*n-1].orvar==3){
-		sprintf(call_code[call_number].op,"pushvar");
-		sprintf(call_code[call_number].dest,"gp:%d",temp1);
-		sprintf(call_code[call_number].src1,"\0");
-		sprintf(call_code[call_number].src2,"\0");
-		call_number++;
+	if(find(s)->s[k-1].orvar==3){
+		if(prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->type==1){
+			sprintf(call_code[call_number].op,"pushvar");
+			sprintf(call_code[call_number].dest,"%s:%s",search_table(o,prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->piden)->name,prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->piden);
+			sprintf(call_code[call_number].src1,"\0");
+			sprintf(call_code[call_number].src2,"\0");
+			call_number++;
+		}
+		else if(prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->type==2){
+			syntax_expression(prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->pexpression,o);
+			temp1=temp++;
+			sprintf(code[code_number].op,"muli");
+			sprintf(code[code_number].dest,"gp:%d",temp1);
+			sprintf(code[code_number].src1,"gp:%d",temp1);
+			sprintf(code[code_number].src2,"4");
+			code_number++;
+			printf("muli gp:%d gp:%d 4\n",temp1,temp1);
+			sprintf(call_code[call_number].op,"pushvar");
+			sprintf(call_code[call_number].dest,"%s:%s",search_table(o,prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->piden)->name,prealtable->pexpression->ptermlist->pterm->pfactorlist->pfactor->piden);
+			sprintf(call_code[call_number].src1,"gp:%d",temp1);
+			sprintf(call_code[call_number].src2,"\0");
+			call_number++;
+		}
+		else{
+			while(1)
+				;
+		}
 	}
-	else if(find(s)->s[*n-1].orvar==2){
+	else if(find(s)->s[k-1].orvar==2){
+		syntax_expression(prealtable->pexpression,o);
+		temp1=temp++;
 		sprintf(call_code[call_number].op,"push");
 		sprintf(call_code[call_number].dest,"gp:%d",temp1);
 		sprintf(call_code[call_number].src1,"\0");
