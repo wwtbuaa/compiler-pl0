@@ -8,6 +8,7 @@ char name[][10]={"CONSTTK","INTTK","CHARTK","VARTK","ARRAYTK","OFTK",
 	"IFTK","THENTK","ELSETK","DOTK","WHILETK","FORTK","TOTK","BYTK","DOWNTOTK","PROCETK",
 	"FUNCTK","READTK","WRITETK","CALLTK","BEGINTK","ENDTK"};
 int number=22;
+int line=1;
 
 int isdigit(char c)
 {
@@ -42,8 +43,12 @@ int lexical()
 	scanf("%s",filein);
 	freopen(filein,"r",stdin);
 	while(scanf("%c",&c)!=EOF){
-		if(c=='\n'||c==' ')
+		if(c==' ')
 			continue;
+		else if(c=='\n'){
+			line++;
+			continue;
+		}
 		if(isalpha(c)){
 			str[j++]=c;
 			while(scanf("%c",&c)!=EOF){
@@ -55,9 +60,9 @@ int lexical()
 						if(strcmp(str,type[n])==0)
 							break;
 					if(n==22)
-						fprintf(out,"%d IDEN %s\n",i,str);
+						fprintf(out,"%d %d IDEN %s\n",i,line,str);
 					else
-						fprintf(out,"%d %s %s\n",i,name[n],str);
+						fprintf(out,"%d %d %s %s\n",i,line,name[n],str);
 					ungetc(c,stdin);
 					j=0;
 					i++;
@@ -73,7 +78,7 @@ int lexical()
 					str[j++]=c;
 				else{
 					str[j]='\0';
-					fprintf(out,"%d INTCON %s\n",i,str);
+					fprintf(out,"%d %d INTCON %s\n",i,line,str);
 					ungetc(c,stdin);
 					j=0;
 					i++;
@@ -83,41 +88,41 @@ int lexical()
 			continue;
 		}
 		if(c=='+')
-			fprintf(out,"%d PLUS +\n",i++);
+			fprintf(out,"%d %d PLUS +\n",i++,line);
 		else if(c=='-')
-			fprintf(out,"%d MINU -\n",i++);
+			fprintf(out,"%d %d MINU -\n",i++,line);
 		else if(c=='*')
-			fprintf(out,"%d MULT *\n",i++);
+			fprintf(out,"%d %d MULT *\n",i++,line);
 		else if(c=='/')
-			fprintf(out,"%d DIV /\n",i++);
+			fprintf(out,"%d %d DIV /\n",i++,line);
 		else if(c=='.')
-			fprintf(out,"%d PERIOD .\n",i++);
+			fprintf(out,"%d %d PERIOD .\n",i++,line);
 		else if(c=='(')
-			fprintf(out,"%d LPARENT (\n",i++);
+			fprintf(out,"%d %d LPARENT (\n",i++,line);
 		else if(c==')')
-			fprintf(out,"%d RPARENT )\n",i++);
+			fprintf(out,"%d %d RPARENT )\n",i++,line);
 		else if(c=='[')
-			fprintf(out,"%d LBRACK [\n",i++);
+			fprintf(out,"%d %d LBRACK [\n",i++,line);
 		else if(c==']')
-			fprintf(out,"%d RBRACK ]\n",i++);
+			fprintf(out,"%d %d RBRACK ]\n",i++,line);
 		else if(c=='{')
-			fprintf(out,"%d LBRACE {\n",i++);
+			fprintf(out,"%d %d LBRACE {\n",i++,line);
 		else if(c=='}')
-			fprintf(out,"%d RBRACE }\n",i++);
+			fprintf(out,"%d %d RBRACE }\n",i++,line);
 		else if(c==';')
-			fprintf(out,"%d SEMICN ;\n",i++);
+			fprintf(out,"%d %d SEMICN ;\n",i++,line);
 		else if(c==',')
-			fprintf(out,"%d COMMA ,\n",i++);
+			fprintf(out,"%d %d COMMA ,\n",i++,line);
 		else if(c=='=')
-			fprintf(out,"%d EQL =\n",i++);
+			fprintf(out,"%d %d EQL =\n",i++,line);
 		else if(c==':'){
 			scanf("%c",&c);
 			if(c=='='){
-				fprintf(out,"%d ASSIGN :=\n", i++);
+				fprintf(out,"%d %d ASSIGN :=\n", i++,line);
 				continue;
 			}
 			else{
- 				fprintf(out,"%d COLON :\n",i++);
+ 				fprintf(out,"%d %d COLON :\n",i++,line);
 				ungetc(c,stdin);
 				continue;
 			}
@@ -125,15 +130,15 @@ int lexical()
 		else if(c=='<'){
 			scanf("%c",&c);
 			if(c=='='){
-				fprintf(out,"%d LEQ <=\n",i++);
+				fprintf(out,"%d %d LEQ <=\n",i++,line);
 				continue;
 			}
 			else if(c=='>'){
-				fprintf(out,"%d NEQ <>\n",i++);
+				fprintf(out,"%d %d NEQ <>\n",i++,line);
 				continue;
 			}
 			else{
-				fprintf(out,"%d LSS <\n",i++);
+				fprintf(out,"%d %d LSS <\n",i++,line);
 				ungetc(c,stdin);
 				continue;
 			}
@@ -141,11 +146,11 @@ int lexical()
 		else if(c=='>'){
 			scanf("%c",&c);
 			if(c=='='){
-				fprintf(out,"%d GEQ >=\n",i++);
+				fprintf(out,"%d %d GEQ >=\n",i++,line);
 				continue;
 			}
 			else{
-				fprintf(out,"%d GRE >\n",i++);
+				fprintf(out,"%d %d GRE >\n",i++,line);
 				ungetc(c,stdin);
 				continue;
 			}
@@ -153,17 +158,17 @@ int lexical()
 		else if(c=='\''){
 			scanf("%c",&c);
 			if((!isdigit(c))&&(!isalpha(c))){
-				err(1);
+				err(1,line,"\0");
 				goto label;
 			}
 			str[0]=c;
 			str[1]='\0';
 			scanf("%c",&c);
 			if(c!='\''){
-				err(2);
+				err(2,line,"\0");
 				goto label;
 			}
-			fprintf(out,"%d CHARCON %s\n",i++,str);
+			fprintf(out,"%d %d CHARCON %s\n",i++,str,line);
 		}
 		else if(c=='"'){
 			while(error=scanf("%c",&c)!=EOF){
@@ -178,10 +183,10 @@ int lexical()
 				}
 			}
 			if(error==0){
-				err(3);
+				err(3,line,"\0");
 				goto label;
 			}
-			fprintf(out,"%d STRCON %s\n",i++,str);
+			fprintf(out,"%d %d STRCON %s\n",i++,line,str);
 		}
 	}
 label:

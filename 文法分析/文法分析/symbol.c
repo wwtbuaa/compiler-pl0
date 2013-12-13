@@ -22,7 +22,7 @@ asymbol_entity search(char o[],char s[])
 			if(strcmp(s,t->s[i].name)==0)
 				return t->s[i];
 	}
-	err(6);
+	err(6,0,s);
 }
 
 ssymbol_table search_table(char o[],char s[])
@@ -35,7 +35,7 @@ ssymbol_table search_table(char o[],char s[])
 			if(strcmp(s,t->s[i].name)==0)
 				return t;
 	}
-	err(6);
+	err(6,0,s);
 }
 
 int link(ssymbol_table table)
@@ -55,7 +55,7 @@ ssymbol_table find(char s[])
 	while((t!=NULL)&&(strcmp(s,t->name)!=0))
 		t=t->next;
 	if(t==NULL)
-		err(4);
+		err(4,0,s);
 	return t;
 }
 
@@ -88,7 +88,7 @@ int add_const(sconstdefine pconstdefine,char s[])
 {
 	ssymbol_table table=find(s);
 	if(check(table,pconstdefine->piden)==0)
-		err(5);
+		err(5,0,pconstdefine->piden);
 	table->s[table->n].lenth=0;
 	table->s[table->n].offset=0;
 	strcpy(table->s[table->n].name,pconstdefine->piden);
@@ -114,7 +114,7 @@ int add_var_demo(char sl[],int type,int lenth,char s[])
 {
 	ssymbol_table table=find(s);
 	if(check(table,sl)==0)
-		err(5);
+		err(5,0,sl);
 	table->s[table->n].lenth=lenth;
 	table->s[table->n].offset=0;
 	table->s[table->n].type=type;
@@ -131,7 +131,7 @@ int add_para(svirtuallist pvirtuallist,char s[])
 	table->s[table->n].offset=0;
 	for(i=0;i<pvirtuallist->num;i++){
 		if(check(table,pvirtuallist->piden[i])==0)
-			err(5);
+			err(5,0,pvirtuallist->piden[i]);
 		table->s[table->n].lenth=0;
 		table->s[table->n].type=pvirtuallist->type;
 		if(pvirtuallist->var)
@@ -161,7 +161,7 @@ int add_procedure(sprocedure pprocedure,char s[])
 {
 	ssymbol_table table=find(s);
 	if(check(table,pprocedure->piden)==0)
-		err(5);
+		err(5,0,pprocedure->piden);
 	table->s[table->n].lenth=0;
 	table->s[table->n].offset=0;
 	strcpy(table->s[table->n].name,pprocedure->piden);
@@ -175,7 +175,7 @@ int add_function(sfunction pfunction,char s[])
 {
 	ssymbol_table table=find(s);
 	if(check(table,pfunction->piden)==0)
-		err(5);
+		err(5,0,pfunction->piden);
 	table->s[table->n].lenth=0;
 	table->s[table->n].offset=0;
 	strcpy(table->s[table->n].name,pfunction->piden);

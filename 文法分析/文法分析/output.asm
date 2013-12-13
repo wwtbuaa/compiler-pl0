@@ -1711,8 +1711,8 @@ sw $t0 -288($gp)
 lw $t0 -288($gp)
 lw $t1 0($t0)
 sw $t1 -292($gp)
-lw $t0 -292($gp)
-lw $t1 -4($gp)
+lw $t0 -280($gp)
+lw $t1 -292($gp)
 bne $t0 $t1 label22
 lw $t1 8($sp)
 addi $t0 $t1 0

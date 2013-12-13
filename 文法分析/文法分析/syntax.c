@@ -75,9 +75,9 @@ int syntax_constdefine(sconstdefine pconstdefine,char *o)
 		sprintf(code[code_number].op,"addi");
 		sprintf(code[code_number].dest,"%s:%s",o,pconstdefine->piden);
 		sprintf(code[code_number].src1,"$0");
-		sprintf(code[code_number].src2,"%c",pconstdefine->pchar);
+		sprintf(code[code_number].src2,"%d",pconstdefine->pchar);
 		code_number++;
-		printf("addi %s:%s $0 %c\n",o,pconstdefine->piden,pconstdefine->pchar);
+		printf("addi %s:%s $0 %d\n",o,pconstdefine->piden,pconstdefine->pchar);
 	}
 	else{
 		sprintf(code[code_number].op,"addi");
@@ -158,7 +158,7 @@ int syntax_assignstatement(sassignstatement passignstatement,char *o)
 	switch(passignstatement->type){
 	case 0:
 		if(t.orvar==0)
-			err(7);
+			err(7,0,t.name);
 		syntax_expression(passignstatement->pexpression,o);
 		sprintf(code[code_number].op,"addi");
 		sprintf(code[code_number].dest,"%s:%s",search_table(o,passignstatement->piden)->name,passignstatement->piden);
@@ -170,7 +170,7 @@ int syntax_assignstatement(sassignstatement passignstatement,char *o)
 		break;
 	case 1:
 		if(t.orvar!=1)
-			err(7);
+			err(7,0,t.name);
 		syntax_expression(passignstatement->pexpression,o);
 		temp1=temp;
 		temp++;
@@ -288,7 +288,7 @@ int syntax_factor(sfactor pfactor,char *o)
 	case 2:
 		t=search(o,pfactor->piden);
 		if(t.lenth==0)
-			err(8);
+			err(8,0,t.name);
 		syntax_expression(pfactor->pexpression,o);
 		sprintf(code[code_number].op,"muli");
 		sprintf(code[code_number].dest,"gp:%d",temp);
@@ -837,7 +837,7 @@ int syntax_realtable(srealtable prealtable,char *s,char *o,int *n)
 		call_number++;
 	}
 	else 
-		err(10);
+		err(10,0,find(s)->s[k-1].name);
 	return 0;
 }
 

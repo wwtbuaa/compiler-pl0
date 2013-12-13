@@ -1,7 +1,9 @@
 #include"lex.h"
 #include"parse.h"
+#include"error.h"
 
 int n;
+int parse_line;
 char s[10];
 char v[100];
 int level=1;
@@ -13,50 +15,46 @@ svirtuallist dvirtuallist()
 	t->var=0;
 	if(strcmp(s,"VARTK")==0){
 		t->var=1;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	if(strcmp(s,"IDEN")!=0){
-		printf("error!");
-		system("pause");
+		err(11,parse_line,v);
 	}
 	strcpy(t->piden[i++],v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	while(strcmp(s,"COMMA")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"IDEN")!=0){
-			printf("error!");
-			system("pause");
+			err(11,parse_line,v);
 		}
 		strcpy(t->piden[i++],v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	if(strcmp(s,"COLON")!=0){
-		printf("error!");
-		system("pause");
+		err(12,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"INTTK")==0)
 		t->type=0;
 	else if(strcmp(s,"CHARTK")==0)
 		t->type=1;
 	else{
-		printf("error!");
-		system("pause");
+		err(13,parse_line,"\0");
 	}
 	t->num=i;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
 svirtualtable dvirtualtable()
 {
 	svirtualtable t=(svirtualtable)malloc(sizeof(avirtualtable)),p,q;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pvirtuallist=dvirtuallist();
 	t->pvirtualtable=NULL;
 	p=t;
 	while(strcmp(s,"SEMICN")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		q=(svirtualtable)malloc(sizeof(avirtualtable));
 		p->pvirtualtable=q;
 		q->pvirtuallist=dvirtuallist();
@@ -64,10 +62,9 @@ svirtualtable dvirtualtable()
 		p=q;
 	}
 	if(strcmp(s,"RPARENT")!=0){
-		printf("error!");
-		system("pause");
+		err(14,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -75,13 +72,12 @@ sfunction dfunction()
 {
 	sfunction t=(sfunction)malloc(sizeof(afunction));
 	t->type=0;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"IDEN")!=0){
-		printf("error!");
-		system("pause");
+		err(11,parse_line,v);
 	}
 	strcpy(t->piden,v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"LPARENT")==0){
 		t->type=1;
 		t->pvirtualtable=dvirtualtable();
@@ -89,25 +85,22 @@ sfunction dfunction()
 	else
 		t->pvirtualtable=NULL;
 	if(strcmp(s,"COLON")!=0){
-		printf("error!");
-		system("pause");
+		err(12,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"INTTK")==0)
 		t->orchar=0;
 	else if(strcmp(s,"CHARTK")==0)
 		t->orchar=1;
 	else{
-		printf("error!");
-		system("pause");
+		err(13,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"SEMICN")!=0){
-		printf("error!");
-		system("pause");
+		err(15,parse_line,"\0");
 	}
 	t->level=level;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -115,13 +108,12 @@ sprocedure dprocedure()
 {
 	sprocedure t=(sprocedure)malloc(sizeof(aprocedure));
 	t->type=0;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"IDEN")!=0){
-		printf("error!");
-		system("pause");
+		err(11,parse_line,v);
 	}
 	strcpy(t->piden,v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"LPARENT")==0){
 		t->type=1;
 		t->pvirtualtable=dvirtualtable();
@@ -129,11 +121,10 @@ sprocedure dprocedure()
 	else
 		t->pvirtualtable=NULL;
 	if(strcmp(s,"SEMICN")!=0){
-		printf("error!");
-		system("pause");
+		err(15,parse_line,"\0");
 	}
 	t->level=level;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -144,10 +135,9 @@ sproceduredeclare dproceduredeclare()
 	t->pprocedure=dprocedure();
 	t->pblock=dblock();
 	if(strcmp(s,"SEMICN")!=0){
-		printf("error!");
-		system("pause");
+		err(15,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	level--;
 	return t;
 }
@@ -159,10 +149,9 @@ sfunctiondeclare dfunctiondeclare()
 	t->pfunction=dfunction();
 	t->pblock=dblock();
 	if(strcmp(s,"SEMICN")!=0){
-		printf("error!");
-		system("pause");
+		err(15,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	level--;
 	return t;
 }
@@ -172,7 +161,7 @@ sprogramme dprogramme()
 	sprogramme t=(sprogramme)malloc(sizeof(aprogramme));
 	t->pblock=dblock();
 	if(strcmp(s,"PERIOD")!=0)
-		printf("error!");
+		err(16,parse_line,"\0");
 	return t;
 }
 
@@ -194,8 +183,7 @@ sblock dblock()
 	if(strcmp(s,"BEGINTK")==0)
 		t->pcomplexstatement=dcomplexstatement();
 	else {
-		printf("error!");
-		system("pause");
+		err(17,parse_line,"\0");
 		t->pcomplexstatement=NULL;
 	}
 	return t;
@@ -224,7 +212,7 @@ spflist dpflist()
 	t->ppflist=NULL;
 	p=t;
 	while((strcmp(s,"PROCETK")==0)||(strcmp(s,"FUNCTK")==0)){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		q=(spflist)malloc(sizeof(apflist));
 		p->ppflist=q;
 		q->ppf=dpf();
@@ -238,12 +226,12 @@ sconstdeclare dconstdeclare()
 {
 	sconstdeclare t,p,q;
 	t=(sconstdeclare)malloc(sizeof(aconstdeclare));
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pconstdefine=dconstdefine();
 	t->pconstdeclare=NULL;
 	p=t;
 	while(strcmp(s,"COMMA")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		q=(sconstdeclare)malloc(sizeof(aconstdeclare));
 		p->pconstdeclare=q;
 		q->pconstdefine=dconstdefine();
@@ -251,24 +239,22 @@ sconstdeclare dconstdeclare()
 		p=q;
 	}
 	if(strcmp(s,"SEMICN")!=0){
-		printf("error!");
-		system("pause");
+		err(15,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
 sconstdefine dconstdefine()
 {
-	char sl[10];
+	char sl[100];
 	sconstdefine t=(sconstdefine)malloc(sizeof(aconstdefine));
 	strcpy(sl,v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"EQL")!=0){
-		printf("error!");
-		system("pause");
+		err(18,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"CHARCON")==0){
 		strcpy(t->piden,sl);
 		t->type=1;
@@ -276,10 +262,9 @@ sconstdefine dconstdefine()
 		t->pchar=v[0];
 	}
 	else if(strcmp(s,"PLUS")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"INTCON")!=0){
-			printf("error!");
-			system("pause");
+			err(19,parse_line,v);
 		}
 		strcpy(t->piden,sl);
 		t->type=0;
@@ -293,10 +278,9 @@ sconstdefine dconstdefine()
 		t->pint=atoi(v);
 	}
 	else if(strcmp(s,"MINUS")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"INTCON")!=0){
-			printf("error!");
-			system("pause");
+			err(19,parse_line,v);
 		}
 		strcpy(t->piden,sl);
 		t->type=0;
@@ -304,10 +288,9 @@ sconstdefine dconstdefine()
 		t->pint=-atoi(v);
 	}
 	else{
-		printf("error!");
-		system("pause");
+		err(20,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -315,15 +298,14 @@ svardeclare dvardeclare()
 {
 	svardeclare t,p,q;
 	t=(svardeclare)malloc(sizeof(avardeclare));
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pvardefine=dvardefine();
 	t->pvardeclare=NULL;
 	p=t;
 	if(strcmp(s,"SEMICN")!=0){
-		printf("error!");
-		system("pause");
+		err(15,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	while(strcmp(s,"IDEN")==0){
 		q=(svardeclare)malloc(sizeof(avardeclare));
 		p->pvardeclare=q;
@@ -331,12 +313,11 @@ svardeclare dvardeclare()
 		q->pvardeclare=NULL;
 		p=q;
 		if(strcmp(s,"SEMICN")==0){
-			scanf("%d%s%s",&n,&s,&v);
+			scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 			continue;
 		}
 		else{
-			printf("error!");
-			system("pause");
+			err(15,parse_line,"\0");
 		}
 	}
 	return t;
@@ -347,56 +328,48 @@ svardefine dvardefine()
 	int i=0;
 	svardefine t=(svardefine)malloc(sizeof(avardefine));
 	if(strcmp(s,"IDEN")!=0){
-		printf("error!");
-		system("pause");
+		err(11,parse_line,v);
 	}
 	strcpy(t->piden[i++],v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	while(strcmp(s,"COMMA")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"IDEN")!=0){
-			printf("error!");
-			system("pause");
+			err(11,parse_line,v);
 		}
 		strcpy(t->piden[i++],v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	t->num=i;
 	if(strcmp(s,"COLON")!=0){
-		printf("error!");
-		system("pause");
+		err(12,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"ARRAYTK")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"LBRACK")!=0){
-			printf("error!");
-			system("pause");
+			err(21,parse_line,"\0");
 		}
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"INTCON")!=0){
-			printf("error!");
-			system("pause");
+			err(19,parse_line,v);
 		}
 		t->lenth=atoi(v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"RBRACK")!=0){
-			printf("error!");
-			system("pause");
+			err(22,parse_line,"\0");
 		}
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"OFTK")!=0){
-			printf("error!");
-			system("pause");
+			err(23,parse_line,"\0");
 		}
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"INTTK")==0)
 			t->type=0;
 		else if(strcmp(s,"CHARTK")==0)
 			t->type=1;
 		else{
-			printf("error!");
-			system("pause");
+			err(20,parse_line,"\0");
 		}
 	}
 	else if(strcmp(s,"INTTK")==0){
@@ -408,10 +381,9 @@ svardefine dvardefine()
 		t->lenth=0;
 	}
 	else{
-		printf("error!");
-		system("pause");
+		err(20,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -419,16 +391,14 @@ scomplexstatement dcomplexstatement()
 {
 	scomplexstatement t=(scomplexstatement)malloc(sizeof(acomplexstatement));
 	if(strcmp(s,"BEGINTK")!=0){
-		printf("error!");
-		system("pause");
+		err(17,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pstatementlist=dstatementlist();
 	if(strcmp(s,"ENDTK")!=0){
-		printf("error!");
-		system("pause");
+		err(24,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -437,7 +407,7 @@ sassignstatement dassignstatement(char *sl,sexpression sd)
 	sassignstatement t=(sassignstatement)malloc(sizeof(aassignstatement));
 	strcpy(t->piden,sl);
 	t->type=0;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pnexpression=sd;
 	if(sd!=NULL)
 		t->type=1;
@@ -454,10 +424,10 @@ sexpression dexpression()
 	t->revert=0;
 	if(strcmp(s,"MINU")==0){
 		t->revert=1;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	else if(strcmp(s,"PLUS")==0)
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	a->pterm=dterm();
 	a->ptermlist=NULL;
 	p=a;
@@ -471,7 +441,7 @@ sexpression dexpression()
 			x->type=1;
 		q->pplus=x;
 		q->ppluslist=NULL;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		p->ptermlist=(stermlist)malloc(sizeof(atermlist));
 		p=p->ptermlist;
 		p->pterm=dterm();
@@ -488,7 +458,7 @@ sexpression dexpression()
 		c->ppluslist=NULL;
 		q->ppluslist=c;
 		q=q->ppluslist;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		p->ptermlist=(stermlist)malloc(sizeof(atermlist));
 		p=p->ptermlist;
 		p->pterm=dterm();
@@ -518,7 +488,7 @@ sterm dterm()
 			x->type=1;
 		q->pmul=x;
 		q->pmullist=NULL;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		p->pfactorlist=(sfactorlist)malloc(sizeof(afactorlist));
 		p=p->pfactorlist;
 		p->pfactor=dfactor();
@@ -535,7 +505,7 @@ sterm dterm()
 		c->pmullist=NULL;
 		q->pmullist=c;
 		q=q->pmullist;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		p->pfactorlist=(sfactorlist)malloc(sizeof(afactorlist));
 		p=p->pfactorlist;
 		p->pfactor=dfactor();
@@ -551,17 +521,16 @@ sconditionstatement dconditionstatement()
 	sconditionstatement t=(sconditionstatement)malloc(sizeof(aconditionstatement));
 	t->pstatement1=NULL;
 	t->pstatement2=NULL;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pcondition=dcondition();
 	t->type=0;
 	if(strcmp(s,"THENTK")!=0){
-		printf("error!");
-		system("pause");
+		err(25,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pstatement1=dstatement();
 	if(strcmp(s,"ELSETK")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		t->pstatement2=dstatement();
 		t->type=1;
 	}
@@ -584,7 +553,7 @@ scondition dcondition()
 		t->type=5;
 	else if(strcmp(s,"NEQ")==0)
 		t->type=6;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pexpression2=dexpression();
 	return t;
 }
@@ -592,13 +561,12 @@ scondition dcondition()
 swhilestatement dwhilestatement()
 {
 	swhilestatement t=(swhilestatement)malloc(sizeof(awhilestatement));
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pcondition=dcondition();
 	if(strcmp(s,"DOTK")!=0){
-		printf("error!");
-		system("pause");
+		err(26,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pstatement=dstatement();
 	return t;
 }
@@ -606,34 +574,30 @@ swhilestatement dwhilestatement()
 sforstatement dforstatement()
 {
 	sforstatement t=(sforstatement)malloc(sizeof(aforstatement));
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"IDEN")!=0){
-		printf("error!");
-		system("pause");
+		err(11,parse_line,v);
 	}
 	strcpy(t->piden,v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"ASSIGN")!=0){
-		printf("error!");
-		system("pause");
+		err(27,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pexpression1=dexpression();
 	if((strcmp(s,"TOTK")!=0)&&(strcmp(s,"DOWNTK")!=0)){
-		printf("error!");
-		system("pause");
+		err(28,parse_line,"\0");
 	}
 	if(strcmp(s,"TOTK")==0)
 		t->type=0;
 	else
 		t->type=1;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pexpression2=dexpression();
 	if(strcmp(s,"DOTK")!=0){
-		printf("error!");
-		system("pause");
+		err(26,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pstatement=dstatement();
 	return t;
 }
@@ -641,12 +605,12 @@ sforstatement dforstatement()
 srealtable drealtable()
 {
 	srealtable t=(srealtable)malloc(sizeof(arealtable)),p=NULL,q=NULL;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->pexpression=dexpression();
 	t->prealtable=NULL;
 	p=t;
 	while(strcmp(s,"COMMA")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		q=(srealtable)malloc(sizeof(arealtable));
 		p->prealtable=q;
 		q->pexpression=dexpression();
@@ -654,10 +618,9 @@ srealtable drealtable()
 		p=q;
 	}
 	if(strcmp(s,"RPARENT")!=0){
-		printf("error!");
-		system("pause");
+		err(14,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
@@ -676,32 +639,28 @@ sreadstatement dreadstatement()
 {
 	int i=0;
 	sreadstatement t=(sreadstatement)malloc(sizeof(areadstatement));
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"LPARENT")!=0){
-		printf("error!");
-		system("pause");
+		err(29,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"IDEN")!=0){
-		printf("error!");
-		system("pause");
+		err(11,parse_line,v);
 	}
 	strcpy(t->piden[i++],v);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	while(strcmp(s,"COMMA")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"IDEN")!=0){
-			printf("error!");
-			system("pause");
+			err(11,parse_line,v);
 		}
 		strcpy(t->piden[i++],v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	if(strcmp(s,"RPARENT")!=0){
-		printf("error!");
-		system("pause");
+		err(14,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	t->num=i;
 	return t;
 }
@@ -710,21 +669,21 @@ swritestatement dwritestatement()
 {
 	swritestatement t=(swritestatement)malloc(sizeof(awritestatement));
 	t->type=0;
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	if(strcmp(s,"LPARENT")!=0){
-		printf("error!");
-		system("pause");
+		err(29,parse_line,"\0");
 	}
 	scanf("%d",&n);
+	scanf("%d",&parse_line);
 	scanf("%s",&s);
 	scanf("%c",&v);
 	gets(v);
 	if(strcmp(s,"STRCON")==0){
 		t->type=2;
 		strcpy(t->pstring,v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	    if(strcmp(s,"COMMA")==0){
-			scanf("%d%s%s",&n,&s,&v);
+			scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 			t->type=1;
 			t->pexpression=dexpression();
 		}
@@ -734,16 +693,15 @@ swritestatement dwritestatement()
 		t->pexpression=dexpression();
 	}
 	if(strcmp(s,"RPARENT")!=0){
-		printf("error!");
-		system("pause");
+		err(14,parse_line,"\0");
 	}
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	return t;
 }
 
 sstatement dstatement()
 {
-	char sl[10],sr[10];
+	char sl[100],sr[100];
 	sstatement t=(sstatement)malloc(sizeof(astatement));
 	sexpression sd=NULL;
 	t->type=0;
@@ -758,20 +716,19 @@ sstatement dstatement()
 	if(strcmp(s,"IDEN")==0){
 		strcpy(sl,s);
 		strcpy(sr,v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"ASSIGN")==0){
 			t->type=1;
 			t->passignstatement=dassignstatement(sr,NULL);
 		}
 		else if(strcmp(s,"LBRACK")==0){
 			t->type=1;
-			scanf("%d%s%s",&n,&s,&v);
+			scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 			sd=dexpression();
 			if(strcmp(s,"RBRACK")!=0){
-				printf("error!");
-				system("pause");
+				err(22,parse_line,"\0");
 			}
-			scanf("%d%s%s",&n,&s,&v);
+			scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 			t->passignstatement=dassignstatement(sr,sd);
 		}
 		else{
@@ -813,7 +770,7 @@ sstatementlist dstatementlist()
 	t->pstatementlist=NULL;
 	p=t;
 	while(strcmp(s,"SEMICN")==0){
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		q=(sstatementlist)malloc(sizeof(astatement));
 		p->pstatementlist=q;
 		q->pstatement=dstatement();
@@ -833,38 +790,36 @@ scallfunction dcallfunction(char *sl)
 
 sfactor dfactor()
 {
-	char sl[10];
+	char sl[100];
 	sfactor t=(sfactor)malloc(sizeof(afactor));
 	t->pexpression=NULL;
 	t->pcallfunction=NULL;
 	if(strcmp(s,"LPARENT")==0){
 		t->type=4;
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		t->pexpression=dexpression();
 		if(strcmp(s,"RPARENT")!=0){
-			printf("error!");
-			system("pause");
+			err(14,parse_line,"\0");
 		}
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	else if(strcmp(s,"INTCON")==0){
 		t->type=3;
 		t->pnumber=atoi(v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	}
 	else if(strcmp(s,"IDEN")==0){
 		strcpy(sl,v);
-		scanf("%d%s%s",&n,&s,&v);
+		scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		if(strcmp(s,"LBRACK")==0){
 			t->type=2;
-			scanf("%d%s%s",&n,&s,&v);
+			scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 			strcpy(t->piden,sl);
 			t->pexpression=dexpression();
 			if(strcmp(s,"RBRACK")!=0){
-				printf("error!");
-				system("pause");
+				err(22,parse_line,"\0");
 			}
-			scanf("%d%s%s",&n,&s,&v);
+			scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 		}
 		else if(strcmp(s,"LPARENT")==0){
 			t->type=5;
@@ -883,7 +838,7 @@ sprogramme parse()
 	sprogramme result;
 	lexical();
 	freopen("lexical.txt","r",stdin);
-	scanf("%d%s%s",&n,&s,&v);
+	scanf("%d%d%s%s",&n,&parse_line,&s,&v);
 	result=dprogramme();
 	return result;
 }

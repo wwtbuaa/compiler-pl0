@@ -1,7 +1,7 @@
 #include"interpreter.h"
 
-char call_pro[10];
-char call_procedure[10][10];
+char call_pro[100];
+char call_procedure[10][100];
 int call_num=0;
 int str_num=0;
 char print_str[100][100];
@@ -127,7 +127,7 @@ int inter_label(asyntax_code in,FILE *out)
 int inter_get(asyntax_code in,FILE *out)
 {
 	int i;
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	i=search_offset(s1,s2);
 	printf("lw $t0 0($s0)\n");
@@ -142,7 +142,7 @@ int inter_get(asyntax_code in,FILE *out)
 int inter_gervar(asyntax_code in,FILE *out)
 {
 	int i;
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	i=search_offset(s1,s2);
 	printf("lw $t0 0($s0)\n");
@@ -156,7 +156,7 @@ int inter_gervar(asyntax_code in,FILE *out)
 
 int inter_push(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	printf("lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
@@ -169,7 +169,7 @@ int inter_push(asyntax_code in,FILE *out)
 
 int inter_pushvar(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	int offset,i;
 	ssymbol_table t;
 	asymbol_entity e;
@@ -222,7 +222,7 @@ int inter_pushvar(asyntax_code in,FILE *out)
 
 int inter_write(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	printf("addi $v0 $0 1\n");
 	fprintf(out,"addi $v0 $0 1\n");
@@ -247,7 +247,7 @@ int inter_writestr(asyntax_code in,FILE *out)
 
 int inter_read(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	int i,offset;
 	ssymbol_table t;
 	asymbol_entity e;
@@ -284,7 +284,7 @@ int inter_read(asyntax_code in,FILE *out)
 
 int inter_addi(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10];
+	char s1[100],s2[100],s3[100],s4[100];
 	int offset,sp_change=0,i;
 	int n;
 	ssymbol_table t;
@@ -397,7 +397,7 @@ int inter_addi(asyntax_code in,FILE *out)
 
 int inter_add(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
+	char s1[100],s2[100],s3[100],s4[100],s5[100],s6[100];
 	int offset,i;
 	ssymbol_table t;
 	asymbol_entity e;
@@ -467,7 +467,7 @@ int inter_add(asyntax_code in,FILE *out)
 
 int inter_lw(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10];
+	char s1[100],s2[100],s3[100],s4[100];
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
 	fprintf(out,"lw $t0 -%d($gp)\n",4*(atoi(s4)+1));
@@ -481,7 +481,7 @@ int inter_lw(asyntax_code in,FILE *out)
 
 int inter_sw(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10];
+	char s1[100],s2[100],s3[100],s4[100];
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
 	printf("lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
@@ -495,7 +495,7 @@ int inter_sw(asyntax_code in,FILE *out)
 
 int inter_muli(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10];
+	char s1[100],s2[100],s3[100],s4[100];
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
 	printf("lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
@@ -511,7 +511,7 @@ int inter_muli(asyntax_code in,FILE *out)
 
 int inter_mul(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
+	char s1[100],s2[100],s3[100],s4[100],s5[100],s6[100];
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
 	split(in.src2,s5,s6);
@@ -528,7 +528,7 @@ int inter_mul(asyntax_code in,FILE *out)
 
 int inter_div(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
+	char s1[100],s2[100],s3[100],s4[100],s5[100],s6[100];
 	split(in.dest,s1,s2);
 	split(in.src1,s3,s4);
 	split(in.src2,s5,s6);
@@ -582,7 +582,7 @@ int add_offset()
 
 int inter_sub(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10],s5[10],s6[10];
+	char s1[100],s2[100],s3[100],s4[100],s5[100],s6[100];
 	int i,offset;
 	ssymbol_table t;
 	asymbol_entity e;
@@ -643,7 +643,7 @@ int inter_sub(asyntax_code in,FILE *out)
 
 int inter_bgez(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	printf("lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
@@ -654,7 +654,7 @@ int inter_bgez(asyntax_code in,FILE *out)
 
 int inter_bgtz(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	printf("lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
@@ -665,9 +665,9 @@ int inter_bgtz(asyntax_code in,FILE *out)
 
 int inter_beq(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10];
+	char s1[100],s2[100],s3[100],s4[100];
 	split(in.dest,s1,s2);
-	split(in.src1,s1,s2);
+	split(in.src1,s3,s4);
 	printf("lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	printf("lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
@@ -678,9 +678,9 @@ int inter_beq(asyntax_code in,FILE *out)
 
 int inter_bne(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10],s3[10],s4[10];
+	char s1[100],s2[100],s3[100],s4[100];
 	split(in.dest,s1,s2);
-	split(in.src1,s1,s2);
+	split(in.src1,s3,s4);
 	printf("lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"lw $t0 -%d($gp)\n",4*(atoi(s2)+1));
 	printf("lw $t1 -%d($gp)\n",4*(atoi(s4)+1));
@@ -754,7 +754,7 @@ int inter_call(asyntax_code in,FILE *out)
 
 int inter_get_return(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	printf("sw $v0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"sw $v0 -%d($gp)\n",4*(atoi(s2)+1));
@@ -762,7 +762,7 @@ int inter_get_return(asyntax_code in,FILE *out)
 
 int inter_ret(asyntax_code in,FILE *out)
 {
-	char s1[10],s2[10];
+	char s1[100],s2[100];
 	split(in.dest,s1,s2);
 	printf("lw $v0 -%d($gp)\n",4*(atoi(s2)+1));
 	fprintf(out,"lw $v0 -%d($gp)\n",4*(atoi(s2)+1));

@@ -11,7 +11,7 @@ typedef struct symbol_entity *ssymbol_entity,asymbol_entity;
 typedef struct symbol_table *ssymbol_table,asymbol_table;
 
 typedef struct symbol_entity{
-	char name[10];
+	char name[100];
 	int type;//type=0 int,type=1 char
 	int value;
 	int orvar;//1 var,0 const,2 para,3 varpara,4 function,5 procedure,6 return value
@@ -25,7 +25,7 @@ typedef struct symbol_table{
 	int level;
 	int para_number;
 	int offset_total;
-	char name[10];
+	char name[100];
 	asymbol_entity s[100];
 	ssymbol_table next;
 	int lev;
